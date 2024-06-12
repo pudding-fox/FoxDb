@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net461</TargetFrameworks>
+    <AssemblyName>FoxDb.SqlCe</AssemblyName>
+    <OutputPath>..\distribution\</OutputPath>
+    <SkipEnsureBindingRedirects>true</SkipEnsureBindingRedirects>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.6.1</Version>
+    <AssemblyVersion>0.0.6.1</AssemblyVersion>
+    <FileVersion>0.0.6.1</FileVersion>
+    <PackageProjectUrl>https://github.com/aidan-g/FoxDb</PackageProjectUrl>
+    <Authors>aidan</Authors>
+    <Company />
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/aidan-g/FoxDb</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>orm sql sqlite sqlserver</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" Condition="'$(TargetFramework)' == 'net40'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SqlServer.Compact" Version="4.0.8876.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FoxDb.Core\FoxDb.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FoxDb.Sql\FoxDb.Sql.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(UserProfile)\.nuget\packages\Microsoft.Bcl.Build\1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="'$(TargetFramework)' == 'net40'" />
+
+  <PropertyGroup>
+    <PostBuildEvent>
+      if not exist "$(TargetDir)x86" md "$(TargetDir)x86"
+      xcopy /s /y "$(UserProfile)\.nuget\packages\Microsoft.SqlServer.Compact\4.0.8876.1\NativeBinaries\x86\*.*" "$(TargetDir)x86"
+      if not exist "$(TargetDir)amd64" md "$(TargetDir)amd64"
+      xcopy /s /y "$(UserProfile)\.nuget\packages\Microsoft.SqlServer.Compact\4.0.8876.1\NativeBinaries\amd64\*.*" "$(TargetDir)amd64"
+    </PostBuildEvent>
+  </PropertyGroup>
+
+</Project>
