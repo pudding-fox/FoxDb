@@ -51,6 +51,7 @@ namespace FoxDb
             public DatabaseReaderRecord(IDataReader reader)
             {
                 this.Reader = reader;
+                this.Data = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                 this.Refresh();
             }
 
@@ -151,12 +152,11 @@ namespace FoxDb
 
             public void Refresh()
             {
-                this.Data = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                 for (var a = 0; a < this.Reader.FieldCount; a++)
                 {
                     var name = this.Reader.GetName(a);
                     var value = this.Reader.GetValue(a);
-                    this.Data.Add(name, value);
+                    this.Data[name] = value;
                 }
             }
         }
