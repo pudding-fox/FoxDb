@@ -10,12 +10,19 @@ namespace FoxDb
 {
     public partial class DatabaseReader : Disposable, IDatabaseReader
     {
-        public DatabaseReader(IDbCommand command, bool ownsCommand)
+        protected DatabaseReader()
+        {
+            this.ColumnNames = new Dictionary<int, string>();
+        }
+
+        public DatabaseReader(IDbCommand command, bool ownsCommand) : this()
         {
             this.Command = command;
             this.OwnsCommand = ownsCommand;
             this.Reader = command.ExecuteReader();
         }
+
+        public IDictionary<int, string> ColumnNames { get; private set; }
 
         public IDbCommand Command { get; private set; }
 
@@ -27,7 +34,7 @@ namespace FoxDb
         {
             while (this.Reader.Read())
             {
-                yield return new DatabaseReaderRecord(this.Reader);
+                yield return new DatabaseReaderRecord(this.ColumnNames, this.Reader);
             }
         }
 
@@ -48,12 +55,15 @@ namespace FoxDb
 
         private class DatabaseReaderRecord : IDatabaseReaderRecord
         {
-            public DatabaseReaderRecord(IDataReader reader)
+            public DatabaseReaderRecord(IDictionary<int, string> columnNames, IDataReader reader)
             {
+                this.ColumnNames = columnNames;
                 this.Reader = reader;
                 this.Data = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
                 this.Refresh();
             }
+
+            public IDictionary<int, string> ColumnNames { get; private set; }
 
             public IDataReader Reader { get; private set; }
 
@@ -154,7 +164,7 @@ namespace FoxDb
             {
                 for (var a = 0; a < this.Reader.FieldCount; a++)
                 {
-                    var name = this.Reader.GetName(a);
+                    var name = this.ColumnNames.GetOrAdd(a, this.Reader.GetName);
                     var value = this.Reader.GetValue(a);
                     this.Data[name] = value;
                 }
@@ -213,7 +223,7 @@ namespace FoxDb
                 if (await reader.ReadAsync().ConfigureAwait(false))
 #endif
                 {
-                    this.Current = new DatabaseReaderRecord(this.Reader.Reader);
+                    this.Current = new DatabaseReaderRecord(this.Reader.ColumnNames, this.Reader.Reader);
 #if NET40
                     return TaskEx.FromResult(true);
 #else
